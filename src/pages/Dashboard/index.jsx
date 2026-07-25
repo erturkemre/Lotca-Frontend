@@ -39,6 +39,11 @@ export default function Dashboard() {
         const unrealizedPnl = totalValue - costBasis
         const unrealizedPnlPct = costBasis > 0 ? (unrealizedPnl / costBasis) * 100 : 0
 
+        // dailyChangePct is a price-ratio (independent of quantity), so it carries
+        // over unchanged; only the TL amount scales down to this account's share.
+        const dailyChangePerShare = p.totalQuantity > 0 ? p.dailyChange / p.totalQuantity : 0
+        const dailyChange = totalQuantity * dailyChangePerShare
+
         return {
           ...p,
           totalQuantity,
@@ -46,6 +51,7 @@ export default function Dashboard() {
           totalValue,
           unrealizedPnl,
           unrealizedPnlPct,
+          dailyChange,
           // realizedPnl is computed FIFO-wide across all accounts holding this
           // symbol, so it can't be attributed to a single kurum once filtered.
           realizedPnl: null,
@@ -107,6 +113,8 @@ export default function Dashboard() {
               <th className="px-4 py-3">Adet</th>
               <th className="px-4 py-3">Ort. Maliyet</th>
               <th className="px-4 py-3">Güncel Fiyat</th>
+              <th className="px-4 py-3">Günlük %</th>
+              <th className="px-4 py-3">Günlük K/Z</th>
               <th className="px-4 py-3">P&L%</th>
               <th className="px-4 py-3">P&L TL</th>
               <th className="px-4 py-3">Gerçekleşmiş K/Z</th>
@@ -115,14 +123,14 @@ export default function Dashboard() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-gray-400">
+                <td colSpan={9} className="px-4 py-6 text-center text-gray-400">
                   Yükleniyor...
                 </td>
               </tr>
             )}
             {!isLoading && filteredPositions.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-gray-400">
+                <td colSpan={9} className="px-4 py-6 text-center text-gray-400">
                   Pozisyon bulunamadı
                 </td>
               </tr>
@@ -137,6 +145,15 @@ export default function Dashboard() {
                 <td className="px-4 py-3">{p.totalQuantity}</td>
                 <td className="px-4 py-3">{currencyFmt.format(p.averageCost)}</td>
                 <td className="px-4 py-3">{currencyFmt.format(p.lastPrice)}</td>
+                <td className="px-4 py-3">
+                  <span className={p.dailyChangePct >= 0 ? 'text-brand-green' : 'text-brand-red'}>
+                    {p.dailyChangePct >= 0 ? '+' : ''}
+                    {p.dailyChangePct.toFixed(2)}%
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <PnlBadge value={p.dailyChange} />
+                </td>
                 <td className="px-4 py-3">
                   <span className={p.unrealizedPnlPct >= 0 ? 'text-brand-green' : 'text-brand-red'}>
                     {p.unrealizedPnlPct >= 0 ? '+' : ''}
