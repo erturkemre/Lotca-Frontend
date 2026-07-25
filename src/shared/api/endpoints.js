@@ -1,0 +1,38 @@
+export const endpoints = {
+  auth: {
+    register: '/auth/register',
+    login: '/auth/login',
+    me: '/auth/me',
+    password: '/auth/password',
+    forgotPassword: '/auth/forgot-password',
+    resetPassword: '/auth/reset-password',
+  },
+  accounts: '/accounts',
+  accountBrokers: '/accounts/brokers',
+  stocks: {
+    list: '/stocks',
+    search: '/stocks/search',
+  },
+  transactions: '/transactions',
+  dividends: '/dividends',
+  portfolio: {
+    positions: '/portfolio',
+    summary: '/portfolio/summary',
+    history: '/portfolio/history',
+    byAccount: '/portfolio/by-account',
+    equityCurve: '/portfolio/equity-curve',
+    detail: (symbol) => `/portfolio/${symbol}`,
+    chart: (symbol) => `/portfolio/${symbol}/chart`,
+  },
+  ipo: {
+    list: '/ipo',
+    performance: '/ipo/performance',
+    convert: (id) => `/ipo/${id}/convert`,
+    byId: (id) => `/ipo/${id}`,
+  },
+  admin: {
+    users: '/admin/users',
+    userRole: (id) => `/admin/users/${id}/role`,
+    stats: '/admin/stats',
+  },
+}
