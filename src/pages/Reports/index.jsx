@@ -136,11 +136,17 @@ export default function Reports() {
     () =>
       [...history]
         .sort((a, b) => new Date(a.closedAt) - new Date(b.closedAt))
-        .map((h) => ({ name: h.symbol, date: h.closedAt, pnl: h.realizedPnl })),
+        .map((h) => ({
+          name: `${h.symbol} (${h.accountLabel})`,
+          symbol: h.symbol,
+          accountLabel: h.accountLabel,
+          date: h.closedAt,
+          pnl: h.realizedPnl,
+        })),
     [history]
   )
 
-  const isEmpty = !positionsLoading && positions.length === 0
+  const isEmpty = !positionsLoading && !historyLoading && positions.length === 0 && history.length === 0
 
   return (
     <div className="space-y-6">
@@ -249,8 +255,21 @@ export default function Reports() {
                 <XAxis dataKey="date" tick={{ fontSize: 11 }} />
                 <YAxis tickFormatter={(v) => currencyFmt.format(v)} tick={{ fontSize: 11 }} />
                 <Tooltip
-                  formatter={(value) => currencyFmt.format(value)}
-                  labelFormatter={(label, payload) => `${payload?.[0]?.payload?.name ?? ''} — ${label}`}
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null
+                    const item = payload[0].payload
+                    return (
+                      <div className="rounded border border-gray-200 bg-white px-3 py-2 text-sm shadow">
+                        <div className="font-medium">
+                          {item.symbol} — {item.accountLabel}
+                        </div>
+                        <div className="text-gray-500">{label}</div>
+                        <div className={item.pnl >= 0 ? 'text-brand-green' : 'text-brand-red'}>
+                          {currencyFmt.format(item.pnl)}
+                        </div>
+                      </div>
+                    )
+                  }}
                 />
                 <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
                   {realizedBarData.map((d, i) => (
@@ -260,6 +279,49 @@ export default function Reports() {
               </BarChart>
             )}
           </ChartCard>
+
+          <div className="overflow-x-auto rounded-lg bg-white shadow-sm">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 text-left text-gray-500">
+                  <th className="px-4 py-3">Sembol</th>
+                  <th className="px-4 py-3">Kurum</th>
+                  <th className="px-4 py-3">Kapanma Tarihi</th>
+                  <th className="px-4 py-3">Gerçekleşmiş K/Z</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historyLoading && (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
+                      Yükleniyor...
+                    </td>
+                  </tr>
+                )}
+                {!historyLoading && history.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
+                      Henüz kapanmış pozisyon yok
+                    </td>
+                  </tr>
+                )}
+                {[...history]
+                  .sort((a, b) => new Date(b.closedAt) - new Date(a.closedAt))
+                  .map((h, i) => (
+                    <tr key={i} className="border-b border-gray-100 last:border-0">
+                      <td className="px-4 py-3 font-medium">{h.symbol}</td>
+                      <td className="px-4 py-3">{h.accountLabel}</td>
+                      <td className="px-4 py-3">{h.closedAt}</td>
+                      <td className="px-4 py-3">
+                        <span className={h.realizedPnl >= 0 ? 'text-brand-green' : 'text-brand-red'}>
+                          {currencyFmt.format(h.realizedPnl)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
     </div>

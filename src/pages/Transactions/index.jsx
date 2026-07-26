@@ -1,25 +1,36 @@
 import { useState } from 'react'
 import TransactionForm from '../../features/transaction/TransactionForm'
 import { useDeleteTransaction, useTransactions } from '../../features/transaction/useTransactions'
+import { useAccounts } from '../../features/account/useAccounts'
 import ConfirmDialog from '../../shared/components/ConfirmDialog'
 import { downloadCsv } from '../../shared/utils/csv'
 import { notifyError, notifySuccess } from '../../shared/utils/notify'
 
 const PAGE_SIZE = 20
+const emptyFilters = { symbol: '', accountId: '', type: '' }
 
 export default function Transactions() {
   const [showForm, setShowForm] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [page, setPage] = useState(0)
+  const [filters, setFilters] = useState(emptyFilters)
 
-  const { data, isLoading } = useTransactions({ page, size: PAGE_SIZE })
+  const { data: accounts = [] } = useAccounts()
+  const { data, isLoading } = useTransactions({
+    page,
+    size: PAGE_SIZE,
+    symbol: filters.symbol || undefined,
+    accountId: filters.accountId || undefined,
+    type: filters.type || undefined,
+  })
   const deleteTransaction = useDeleteTransaction()
 
   const currencyFmt = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' })
   const transactions = data?.content ?? []
   const totalPages = data?.totalPages ?? 0
   const totalElements = data?.totalElements ?? 0
+  const hasActiveFilters = filters.symbol || filters.accountId || filters.type
 
   function handleNewClick() {
     setEditingTransaction(null)
@@ -34,6 +45,17 @@ export default function Transactions() {
   function handleFormClose() {
     setShowForm(false)
     setEditingTransaction(null)
+  }
+
+  function handleFilterChange(e) {
+    const { name, value } = e.target
+    setFilters((prev) => ({ ...prev, [name]: name === 'symbol' ? value.toUpperCase() : value }))
+    setPage(0)
+  }
+
+  function handleClearFilters() {
+    setFilters(emptyFilters)
+    setPage(0)
   }
 
   function handleDelete() {
@@ -95,6 +117,47 @@ export default function Transactions() {
         />
       )}
 
+      <div className="flex flex-wrap items-center gap-2 rounded-lg bg-white p-3 shadow-sm">
+        <input
+          name="symbol"
+          value={filters.symbol}
+          onChange={handleFilterChange}
+          placeholder="Sembol (örn. THYAO)"
+          className="rounded border border-gray-300 px-3 py-1.5 text-sm"
+        />
+        <select
+          name="accountId"
+          value={filters.accountId}
+          onChange={handleFilterChange}
+          className="rounded border border-gray-300 px-3 py-1.5 text-sm"
+        >
+          <option value="">Tüm Kurumlar</option>
+          {accounts.map((acc) => (
+            <option key={acc.id} value={acc.id}>
+              {acc.label || acc.brokerLabel}
+            </option>
+          ))}
+        </select>
+        <select
+          name="type"
+          value={filters.type}
+          onChange={handleFilterChange}
+          className="rounded border border-gray-300 px-3 py-1.5 text-sm"
+        >
+          <option value="">Alım / Satım</option>
+          <option value="BUY">Alım</option>
+          <option value="SELL">Satım</option>
+        </select>
+        {hasActiveFilters && (
+          <button
+            onClick={handleClearFilters}
+            className="rounded px-3 py-1.5 text-sm text-brand-red hover:underline"
+          >
+            Filtreleri Temizle
+          </button>
+        )}
+      </div>
+
       <div className="overflow-x-auto rounded-lg bg-white shadow-sm">
         <table className="w-full text-sm">
           <thead>
@@ -120,7 +183,7 @@ export default function Transactions() {
             {!isLoading && transactions.length === 0 && (
               <tr>
                 <td colSpan={8} className="px-4 py-6 text-center text-gray-400">
-                  İşlem bulunamadı
+                  {hasActiveFilters ? 'Filtreye uyan işlem bulunamadı' : 'İşlem bulunamadı'}
                 </td>
               </tr>
             )}
