@@ -132,19 +132,18 @@ export default function Reports() {
     [positions]
   )
 
-  const realizedBarData = useMemo(
-    () =>
-      [...history]
-        .sort((a, b) => new Date(a.closedAt) - new Date(b.closedAt))
-        .map((h) => ({
-          name: `${h.symbol} (${h.accountLabel})`,
-          symbol: h.symbol,
-          accountLabel: h.accountLabel,
-          date: h.closedAt,
-          pnl: h.realizedPnl,
-        })),
-    [history]
-  )
+  const realizedBarData = useMemo(() => {
+    const byDate = new Map()
+    history.forEach((h) => {
+      if (!byDate.has(h.closedAt)) {
+        byDate.set(h.closedAt, { date: h.closedAt, pnl: 0, items: [] })
+      }
+      const entry = byDate.get(h.closedAt)
+      entry.pnl += h.realizedPnl
+      entry.items.push({ symbol: h.symbol, accountLabel: h.accountLabel, pnl: h.realizedPnl })
+    })
+    return Array.from(byDate.values()).sort((a, b) => new Date(a.date) - new Date(b.date))
+  }, [history])
 
   const isEmpty = !positionsLoading && !historyLoading && positions.length === 0 && history.length === 0
 
@@ -259,14 +258,19 @@ export default function Reports() {
                     if (!active || !payload?.length) return null
                     const item = payload[0].payload
                     return (
-                      <div className="rounded border border-gray-200 bg-white px-3 py-2 text-sm shadow">
-                        <div className="font-medium">
-                          {item.symbol} — {item.accountLabel}
-                        </div>
+                      <div className="rounded border border-gray-200 bg-white px-3 py-2 text-sm shadow-lg">
                         <div className="text-gray-500">{label}</div>
-                        <div className={item.pnl >= 0 ? 'text-brand-green' : 'text-brand-red'}>
-                          {currencyFmt.format(item.pnl)}
+                        <div className={`font-medium ${item.pnl >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
+                          Toplam: {currencyFmt.format(item.pnl)}
                         </div>
+                        {item.items.map((entry, i) => (
+                          <div
+                            key={i}
+                            className={`mt-1 border-t border-gray-100 pt-1 text-xs ${entry.pnl >= 0 ? 'text-brand-green' : 'text-brand-red'}`}
+                          >
+                            {entry.symbol} — {entry.accountLabel}: {currencyFmt.format(entry.pnl)}
+                          </div>
+                        ))}
                       </div>
                     )
                   }}

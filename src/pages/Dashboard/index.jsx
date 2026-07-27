@@ -144,24 +144,48 @@ export default function Dashboard() {
                 </td>
                 <td className="px-4 py-3">{p.totalQuantity}</td>
                 <td className="px-4 py-3">{currencyFmt.format(p.averageCost)}</td>
-                <td className="px-4 py-3">{currencyFmt.format(p.lastPrice)}</td>
                 <td className="px-4 py-3">
-                  <span className={p.dailyChangePct >= 0 ? 'text-brand-green' : 'text-brand-red'}>
-                    {p.dailyChangePct >= 0 ? '+' : ''}
-                    {p.dailyChangePct.toFixed(2)}%
-                  </span>
+                  {p.priceAvailable === false ? (
+                    <span className="rounded bg-gray-100 px-2 py-0.5 text-xs italic text-gray-500">
+                      Fiyat bekleniyor
+                    </span>
+                  ) : (
+                    currencyFmt.format(p.lastPrice)
+                  )}
                 </td>
                 <td className="px-4 py-3">
-                  <PnlBadge value={p.dailyChange} />
+                  {p.priceAvailable === false ? (
+                    <span className="text-gray-400">-</span>
+                  ) : (
+                    <span className={p.dailyChangePct >= 0 ? 'text-brand-green' : 'text-brand-red'}>
+                      {p.dailyChangePct >= 0 ? '+' : ''}
+                      {p.dailyChangePct.toFixed(2)}%
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3">
-                  <span className={p.unrealizedPnlPct >= 0 ? 'text-brand-green' : 'text-brand-red'}>
-                    {p.unrealizedPnlPct >= 0 ? '+' : ''}
-                    {p.unrealizedPnlPct.toFixed(2)}%
-                  </span>
+                  {p.priceAvailable === false ? (
+                    <span className="text-gray-400">-</span>
+                  ) : (
+                    <PnlBadge value={p.dailyChange} />
+                  )}
                 </td>
                 <td className="px-4 py-3">
-                  <PnlBadge value={p.unrealizedPnl} />
+                  {p.priceAvailable === false ? (
+                    <span className="text-gray-400">-</span>
+                  ) : (
+                    <span className={p.unrealizedPnlPct >= 0 ? 'text-brand-green' : 'text-brand-red'}>
+                      {p.unrealizedPnlPct >= 0 ? '+' : ''}
+                      {p.unrealizedPnlPct.toFixed(2)}%
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  {p.priceAvailable === false ? (
+                    <span className="text-gray-400">-</span>
+                  ) : (
+                    <PnlBadge value={p.unrealizedPnl} />
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {p.realizedPnl === null || p.realizedPnl === undefined || p.realizedPnl === 0 ? (
