@@ -2,7 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import api from '../../shared/api/axios'
 import { endpoints } from '../../shared/api/endpoints'
 
-const REFETCH_INTERVAL = 15 * 60 * 1000
+// Backend serves a price delayed by 15 minutes (rolling, refreshed every minute on
+// its side), so polling more often than that here just re-fetches the same value.
+const REFETCH_INTERVAL = 60 * 1000
 
 export function usePositions() {
   return useQuery({

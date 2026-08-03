@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAccountReport, usePositions, usePortfolioSummary } from '../../features/portfolio/usePortfolio'
 import PnlBadge from '../../shared/components/PnlBadge'
+import TickingValue from '../../shared/components/TickingValue'
 
 function SummaryCard({ label, value, valueClassName }) {
   return (
@@ -65,7 +66,10 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
-        <SummaryCard label="Toplam Değer" value={currencyFmt.format(summary?.totalValue ?? 0)} />
+        <SummaryCard
+          label="Toplam Değer"
+          value={<TickingValue value={summary?.totalValue ?? 0} format={(v) => currencyFmt.format(v)} />}
+        />
         <SummaryCard
           label="Günlük Değişim"
           value={
@@ -150,7 +154,7 @@ export default function Dashboard() {
                       Fiyat bekleniyor
                     </span>
                   ) : (
-                    currencyFmt.format(p.lastPrice)
+                    <TickingValue value={p.lastPrice} format={(v) => currencyFmt.format(v)} />
                   )}
                 </td>
                 <td className="px-4 py-3">
