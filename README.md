@@ -18,10 +18,26 @@ https://github.com/erturkemre/Lotca-Backend — bu arayüz o API'ye bağlanarak
 
 ## Gereksinimler
 
-- **Node.js 18+** ve npm
+- **Docker** (önerilen — hızlı kurulum) **veya** **Node.js 18+** ve npm (geliştirme için)
 - Çalışan bir Lotça backend instance'ı (yerelde veya uzakta)
 
-## Kurulum
+## Kurulum — Docker ile (önerilen)
+
+```bash
+docker build -t lotca-frontend --build-arg VITE_API_URL=http://localhost:8081/api .
+docker run -d -p 5175:80 --name lotca-frontend lotca-frontend
+```
+
+`VITE_API_URL` **build zamanında** koda gömülür (Vite'ın çalışma prensibi
+gereği) — backend'iniz farklı bir adresteyse `--build-arg` ile o adresi verin
+ve image'ı yeniden build edin.
+
+Tarayıcıdan **http://localhost:5175** adresini açın.
+
+> Backend ile birlikte tek komutla ayağa kaldırmak isterseniz, monorepo
+> kökündeki `docker-compose.yml`'i kullanın (bkz. ana proje reposu).
+
+## Kurulum — Docker'sız (geliştirme, hot reload ile)
 
 ```bash
 npm install
