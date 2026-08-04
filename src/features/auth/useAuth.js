@@ -31,6 +31,17 @@ export function useRegister() {
   })
 }
 
+export function useRegistrationStatus() {
+  return useQuery({
+    queryKey: ['auth', 'registration-status'],
+    queryFn: async () => {
+      const { data } = await api.get(endpoints.auth.registrationStatus)
+      return data
+    },
+    staleTime: 30_000,
+  })
+}
+
 export function useLogout() {
   const clearAuth = useAuthStore((s) => s.clearAuth)
   return () => clearAuth()

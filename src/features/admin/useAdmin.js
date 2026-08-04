@@ -36,6 +36,30 @@ export function useUpdateUserRole() {
   })
 }
 
+export function useAdminSettings() {
+  return useQuery({
+    queryKey: ['admin', 'settings'],
+    queryFn: async () => {
+      const { data } = await api.get(endpoints.admin.settings)
+      return data
+    },
+  })
+}
+
+export function useSetRegistrationEnabled() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (enabled) => {
+      const { data } = await api.put(endpoints.admin.registrationSetting, { enabled })
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'settings'] })
+    },
+  })
+}
+
 export function useDeleteUser() {
   const queryClient = useQueryClient()
 

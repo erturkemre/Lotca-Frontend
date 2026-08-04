@@ -1,16 +1,33 @@
 import { useState } from 'react'
 import ConfirmDialog from '../../shared/components/ConfirmDialog'
 import { notifyError, notifySuccess } from '../../shared/utils/notify'
-import { useAdminStats, useAdminUsers, useDeleteUser, useUpdateUserRole } from '../../features/admin/useAdmin'
+import {
+  useAdminSettings,
+  useAdminStats,
+  useAdminUsers,
+  useDeleteUser,
+  useSetRegistrationEnabled,
+  useUpdateUserRole,
+} from '../../features/admin/useAdmin'
 import { useAuthStore } from '../../features/auth/authStore'
 
 export default function Admin() {
   const currentUser = useAuthStore((s) => s.user)
   const { data: users = [], isLoading } = useAdminUsers()
   const { data: stats } = useAdminStats()
+  const { data: settings } = useAdminSettings()
+  const setRegistrationEnabled = useSetRegistrationEnabled()
   const updateRole = useUpdateUserRole()
   const deleteUser = useDeleteUser()
   const [deleteTarget, setDeleteTarget] = useState(null)
+
+  function handleToggleRegistration() {
+    const next = !settings?.registrationEnabled
+    setRegistrationEnabled.mutate(next, {
+      onSuccess: () => notifySuccess(next ? 'Yeni kayıtlar açıldı' : 'Yeni kayıtlar kapatıldı'),
+      onError: (error) => notifyError(error, 'Ayar güncellenemedi'),
+    })
+  }
 
   function handleRoleChange(user, role) {
     if (role === user.role) return
@@ -39,6 +56,31 @@ export default function Admin() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Yönetim</h1>
+
+      <div className="flex items-center justify-between rounded-lg bg-white p-4 shadow-sm">
+        <div>
+          <div className="font-medium text-brand-dark">Yeni Kayıtlar</div>
+          <div className="text-sm text-gray-500">
+            Kapatılırsa siteye kimse yeni hesap açamaz, mevcut kullanıcılar giriş yapmaya devam eder.
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleToggleRegistration}
+          disabled={setRegistrationEnabled.isPending || !settings}
+          role="switch"
+          aria-checked={settings?.registrationEnabled ?? true}
+          className={`inline-flex h-7 w-12 flex-none items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 disabled:opacity-50 ${
+            settings?.registrationEnabled ?? true ? 'bg-brand-green' : 'bg-gray-300'
+          }`}
+        >
+          <span
+            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+              settings?.registrationEnabled ?? true ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
+        </button>
+      </div>
 
       {stats && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

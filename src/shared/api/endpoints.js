@@ -6,6 +6,7 @@ export const endpoints = {
     password: '/auth/password',
     forgotPassword: '/auth/forgot-password',
     resetPassword: '/auth/reset-password',
+    registrationStatus: '/auth/registration-status',
   },
   accounts: '/accounts',
   accountBrokers: '/accounts/brokers',
@@ -34,5 +35,7 @@ export const endpoints = {
     users: '/admin/users',
     userRole: (id) => `/admin/users/${id}/role`,
     stats: '/admin/stats',
+    settings: '/admin/settings',
+    registrationSetting: '/admin/settings/registration',
   },
 }

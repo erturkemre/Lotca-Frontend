@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAccountReport, usePositions, usePortfolioSummary } from '../../features/portfolio/usePortfolio'
+import QuickTransactionModal from '../../features/transaction/QuickTransactionModal'
 import PnlBadge from '../../shared/components/PnlBadge'
 import TickingValue from '../../shared/components/TickingValue'
 
@@ -18,6 +19,7 @@ export default function Dashboard() {
   const { data: summary } = usePortfolioSummary()
   const { data: accountReport = [], isLoading: isAccountReportLoading } = useAccountReport()
   const [accountFilter, setAccountFilter] = useState('all')
+  const [quickTxPosition, setQuickTxPosition] = useState(null)
 
   const accountOptions = useMemo(() => {
     const labels = new Set()
@@ -122,19 +124,20 @@ export default function Dashboard() {
               <th className="px-4 py-3">P&L%</th>
               <th className="px-4 py-3">P&L TL</th>
               <th className="px-4 py-3">Gerçekleşmiş K/Z</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-gray-400">
+                <td colSpan={10} className="px-4 py-6 text-center text-gray-400">
                   Yükleniyor...
                 </td>
               </tr>
             )}
             {!isLoading && filteredPositions.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-gray-400">
+                <td colSpan={10} className="px-4 py-6 text-center text-gray-400">
                   Pozisyon bulunamadı
                 </td>
               </tr>
@@ -198,6 +201,24 @@ export default function Dashboard() {
                     <PnlBadge value={p.realizedPnl} />
                   )}
                 </td>
+                <td className="px-4 py-3 text-right">
+                  <div className="flex justify-end gap-1.5">
+                    <button
+                      onClick={() => setQuickTxPosition({ position: p, type: 'SELL' })}
+                      title="Hızlı satım ekle"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-red-50 font-semibold text-brand-red hover:bg-brand-red hover:text-white"
+                    >
+                      −
+                    </button>
+                    <button
+                      onClick={() => setQuickTxPosition({ position: p, type: 'BUY' })}
+                      title="Hızlı alım ekle"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-brand-green-light font-semibold text-brand-green-dark hover:bg-brand-green hover:text-white"
+                    >
+                      +
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -253,6 +274,14 @@ export default function Dashboard() {
           </tbody>
         </table>
       </div>
+
+      {quickTxPosition && (
+        <QuickTransactionModal
+          position={quickTxPosition.position}
+          defaultType={quickTxPosition.type}
+          onClose={() => setQuickTxPosition(null)}
+        />
+      )}
     </div>
   )
 }
